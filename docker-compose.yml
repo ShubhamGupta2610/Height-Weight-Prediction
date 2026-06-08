@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  streamlit:
+    build: .
+    ports:
+      - "8501:8501"
+    volumes:
+      - .:/app
+    command: streamlit run streamlit_app/app.py --server.port=8501 --server.address=0.0.0.0
+    environment:
+      - PYTHONUNBUFFERED=1
+    working_dir: /app
+
+  flask:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+    command: python flask_app/app.py
+    environment:
+      - FLASK_ENV=production
+      - PYTHONUNBUFFERED=1
+    working_dir: /app
+
+# Usage:
+# docker-compose up streamlit   # Run Streamlit on port 8501
+# docker-compose up flask       # Run Flask on port 5000
+# docker-compose up             # Run all services

@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Height-Weight Predictor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            padding: 40px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .tab-btn {
+            padding: 12px 30px;
+            border: 2px solid white;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .content-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        @media (max-width: 768px) {
+            .content-wrapper {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .input-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+        }
+
+        .input-section h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+
+        .slider-container {
+            margin-bottom: 20px;
+        }
+
+        .slider-container label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+        }
+
+        .value-display {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+        }
+
+        .value-display .label {
+            font-weight: 600;
+            color: #666;
+        }
+
+        .value-display .value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .result-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .result-box h4 {
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .result-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .result-box.weight-mode {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .plot-section {
+            text-align: center;
+        }
+
+        .plot-section img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .metrics-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .metric-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            text-align: center;
+        }
+
+        .metric-card h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+
+        .metric-card .value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .model-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .model-info h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .model-info p {
+            color: #666;
+            margin: 5px 0;
+            font-size: 0.95rem;
+        }
+
+        .loading {
+            text-align: center;
+            color: #667eea;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            padding: 20px;
+            opacity: 0.8;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Height-Weight Prediction System</h1>
+            <p>Predict height from weight and vice versa using Linear Regression</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="openTab('height-tab')">📈 Predict Height</button>
+            <button class="tab-btn" onclick="openTab('weight-tab')">⚖️ Predict Weight</button>
+            <button class="tab-btn" onclick="openTab('analysis-tab')">📊 Model Analysis</button>
+        </div>
+
+        <!-- Height Prediction Tab -->
+        <div id="height-tab" class="tab-content active">
+            <h2 style="color: #667eea; margin-bottom: 20px;">Predict Height from Weight</h2>
+            <div class="error" id="height-error"></div>
+            <div class="content-wrapper">
+                <div class="input-section">
+                    <h3>🎯 Input Parameters</h3>
+                    <div class="slider-container">
+                        <label for="weight-slider">Weight (kg)</label>
+                        <input type="range" id="weight-slider" min="40" max="150" step="0.5" value="70" 
+                               oninput="predictHeight()">
+                        <div class="value-display">
+                            <span class="label">Selected Weight:</span>
+                            <span class="value" id="weight-value">70.0 kg</span>
+                        </div>
+                    </div>
+                    <div class="result-box" id="height-result">
+                        <h4>Predicted Height</h4>
+                        <div class="result-value" id="height-prediction">--</div>
+                        <p style="font-size: 0.9rem; opacity: 0.9;">cm</p>
+                    </div>
+                    <div class="model-info">
+                        <h4>Model Parameters</h4>
+                        <p><strong>Slope:</strong> <span id="height-slope">--</span></p>
+                        <p><strong>Intercept:</strong> <span id="height-intercept">--</span></p>
+                    </div>
+                </div>
+                <div class="plot-section">
+                    <div class="loading" id="height-loading">
+                        <div class="spinner"></div>
+                        <p>Generating visualization...</p>
+                    </div>
+                    <img id="height-plot" src="" alt="Height Prediction Plot" style="display:none;">
+                </div>
+            </div>
+        </div>
+
+        <!-- Weight Prediction Tab -->
+        <div id="weight-tab" class="tab-content">
+            <h2 style="color: #f5576c; margin-bottom: 20px;">Predict Weight from Height</h2>
+            <div class="error" id="weight-error"></div>
+            <div class="content-wrapper">
+                <div class="input-section">
+                    <h3>⚖️ Input Parameters</h3>
+                    <div class="slider-container">
+                        <label for="height-slider">Height (cm)</label>
+                        <input type="range" id="height-slider" min="140" max="210" step="0.5" value="170" 
+                               oninput="predictWeight()">
+                        <div class="value-display">
+                            <span class="label">Selected Height:</span>
+                            <span class="value" id="height-value">170.0 cm</span>
+                        </div>
+                    </div>
+                    <div class="result-box weight-mode" id="weight-result">
+                        <h4>Predicted Weight</h4>
+                        <div class="result-value" id="weight-prediction">--</div>
+                        <p style="font-size: 0.9rem; opacity: 0.9;">kg</p>
+                    </div>
+                    <div class="model-info">
+                        <h4>Reverse Model Parameters</h4>
+                        <p><strong>Slope:</strong> <span id="weight-slope">--</span></p>
+                        <p><strong>Intercept:</strong> <span id="weight-intercept">--</span></p>
+                    </div>
+                </div>
+                <div class="plot-section">
+                    <div class="loading" id="weight-loading">
+                        <div class="spinner"></div>
+                        <p>Generating visualization...</p>
+                    </div>
+                    <img id="weight-plot" src="" alt="Weight Prediction Plot" style="display:none;">
+                </div>
+            </div>
+        </div>
+
+        <!-- Analysis Tab -->
+        <div id="analysis-tab" class="tab-content">
+            <h2 style="color: #667eea; margin-bottom: 20px;">Model Analysis & Performance</h2>
+            <div class="metrics-section" id="metrics-container">
+                <div class="metric-card">
+                    <h4>Mean Squared Error (MSE)</h4>
+                    <div class="value" id="mse-value">--</div>
+                </div>
+                <div class="metric-card">
+                    <h4>Mean Absolute Error (MAE)</h4>
+                    <div class="value" id="mae-value">--</div>
+                </div>
+                <div class="metric-card">
+                    <h4>Root Mean Squared Error (RMSE)</h4>
+                    <div class="value" id="rmse-value">--</div>
+                </div>
+                <div class="metric-card">
+                    <h4>R² Score</h4>
+                    <div class="value" id="r2-value">--</div>
+                </div>
+            </div>
+            <div class="model-info" style="margin-top: 30px;">
+                <h4>📊 Dataset Information</h4>
+                <p><strong>Total Records:</strong> <span id="dataset-size">--</span></p>
+                <p><strong>Training Set:</strong> <span id="train-size">--</span> records (80%)</p>
+                <p><strong>Test Set:</strong> <span id="test-size">--</span> records (20%)</p>
+                <p><strong>Features:</strong> Weight (independent variable)</p>
+                <p><strong>Target:</strong> Height (dependent variable)</p>
+            </div>
+            <div class="model-info" style="margin-top: 20px;">
+                <h4>📈 Weight Statistics</h4>
+                <p><strong>Mean:</strong> <span id="weight-mean">--</span> kg</p>
+                <p><strong>Std Dev:</strong> <span id="weight-std">--</span> kg</p>
+                <p><strong>Min:</strong> <span id="weight-min">--</span> kg</p>
+                <p><strong>Max:</strong> <span id="weight-max">--</span> kg</p>
+            </div>
+            <div class="model-info" style="margin-top: 20px;">
+                <h4>📏 Height Statistics</h4>
+                <p><strong>Mean:</strong> <span id="height-mean">--</span> cm</p>
+                <p><strong>Std Dev:</strong> <span id="height-std">--</span> cm</p>
+                <p><strong>Min:</strong> <span id="height-min">--</span> cm</p>
+                <p><strong>Max:</strong> <span id="height-max">--</span> cm</p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>🔧 Built with Flask | 📊 Linear Regression Model</p>
+        <p>Version 1.0 | 2024</p>
+    </footer>
+
+    <script>
+        // Tab switching
+        function openTab(tabName) {
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(c => c.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Load analysis on first visit
+            if (tabName === 'analysis-tab') {
+                loadMetrics();
+            }
+        }
+
+        // Predict height
+        async function predictHeight() {
+            const weight = parseFloat(document.getElementById('weight-slider').value);
+            document.getElementById('weight-value').textContent = weight.toFixed(1) + ' kg';
+
+            document.getElementById('height-loading').style.display = 'block';
+            document.getElementById('height-plot').style.display = 'none';
+            document.getElementById('height-error').style.display = 'none';
+
+            try {
+                const response = await fetch('/api/predict-height', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ weight: weight })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Prediction failed');
+                }
+
+                const data = await response.json();
+
+                document.getElementById('height-prediction').textContent = data.predicted_height.toFixed(2);
+                document.getElementById('height-slope').textContent = data.slope.toFixed(4);
+                document.getElementById('height-intercept').textContent = data.intercept.toFixed(2);
+                document.getElementById('height-plot').src = data.plot;
+                document.getElementById('height-plot').style.display = 'block';
+            } catch (error) {
+                document.getElementById('height-error').textContent = 'Error: ' + error.message;
+                document.getElementById('height-error').style.display = 'block';
+            } finally {
+                document.getElementById('height-loading').style.display = 'none';
+            }
+        }
+
+        // Predict weight
+        async function predictWeight() {
+            const height = parseFloat(document.getElementById('height-slider').value);
+            document.getElementById('height-value').textContent = height.toFixed(1) + ' cm';
+
+            document.getElementById('weight-loading').style.display = 'block';
+            document.getElementById('weight-plot').style.display = 'none';
+            document.getElementById('weight-error').style.display = 'none';
+
+            try {
+                const response = await fetch('/api/predict-weight', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ height: height })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Prediction failed');
+                }
+
+                const data = await response.json();
+
+                document.getElementById('weight-prediction').textContent = data.predicted_weight.toFixed(2);
+                document.getElementById('weight-slope').textContent = data.slope.toFixed(4);
+                document.getElementById('weight-intercept').textContent = data.intercept.toFixed(4);
+                document.getElementById('weight-plot').src = data.plot;
+                document.getElementById('weight-plot').style.display = 'block';
+            } catch (error) {
+                document.getElementById('weight-error').textContent = 'Error: ' + error.message;
+                document.getElementById('weight-error').style.display = 'block';
+            } finally {
+                document.getElementById('weight-loading').style.display = 'none';
+            }
+        }
+
+        // Load metrics
+        async function loadMetrics() {
+            try {
+                const metricsResponse = await fetch('/api/metrics');
+                const metrics = await metricsResponse.json();
+
+                document.getElementById('mse-value').textContent = metrics.mse.toFixed(4);
+                document.getElementById('mae-value').textContent = metrics.mae.toFixed(4);
+                document.getElementById('rmse-value').textContent = metrics.rmse.toFixed(4);
+                document.getElementById('r2-value').textContent = metrics.r2.toFixed(4);
+                document.getElementById('dataset-size').textContent = metrics.dataset_size;
+                document.getElementById('train-size').textContent = metrics.train_size;
+                document.getElementById('test-size').textContent = metrics.test_size;
+
+                const statsResponse = await fetch('/api/dataset-stats');
+                const stats = await statsResponse.json();
+
+                // Weight stats
+                document.getElementById('weight-mean').textContent = stats.weight_stats['mean'].toFixed(2);
+                document.getElementById('weight-std').textContent = stats.weight_stats['std'].toFixed(2);
+                document.getElementById('weight-min').textContent = stats.weight_stats['min'].toFixed(2);
+                document.getElementById('weight-max').textContent = stats.weight_stats['max'].toFixed(2);
+
+                // Height stats
+                document.getElementById('height-mean').textContent = stats.height_stats['mean'].toFixed(2);
+                document.getElementById('height-std').textContent = stats.height_stats['std'].toFixed(2);
+                document.getElementById('height-min').textContent = stats.height_stats['min'].toFixed(2);
+                document.getElementById('height-max').textContent = stats.height_stats['max'].toFixed(2);
+            } catch (error) {
+                console.error('Error loading metrics:', error);
+            }
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', () => {
+            predictHeight();
+            predictWeight();
+        });
+    </script>
+</body>
+</html>
