@@ -139,9 +139,7 @@ Thumbs.db
 .streamlit/
 
 # Data files (except examples)
-*.csv
 *.xlsx
-!data/example*.csv
 
 # Model files
 *.pkl
